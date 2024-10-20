@@ -76,6 +76,7 @@ app.append(clearButton);
 clearButton.addEventListener("click", function() {
     if(ctx){
         lines.length = 0;
+        undoneLines.length = 0;
         ctx.fillStyle = "white";
         ctx?.fillRect(0, 0, canvas.width, canvas.height);
     }
@@ -86,5 +87,36 @@ canvas.addEventListener("drawing-changed", () => {
         ctx.fillStyle = "white";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         drawLine();
+    }
+});
+
+const undoButton = document.createElement("button");
+undoButton.innerText = "Undo";
+app.append(undoButton);
+
+const undoneLines: { x: number; y: number; }[][] = [];
+
+undoButton.addEventListener("click", function (){
+    if (ctx && lines.length > 0) {
+        const poppedLine = lines.pop();
+        if (poppedLine) {
+            undoneLines.push(poppedLine);
+        }
+        canvas.dispatchEvent(new CustomEvent("drawing-changed"));
+    }
+});
+
+const redoButton = document.createElement("button");
+redoButton.innerText = "Redo";
+app.append(redoButton);
+
+
+redoButton.addEventListener("click", function() {
+    if (ctx && undoneLines.length > 0) {
+        const poppedLine = undoneLines.pop();
+        if (poppedLine) {
+            lines.push(poppedLine);
+        }
+        canvas.dispatchEvent(new CustomEvent("drawing-changed"));
     }
 });
