@@ -22,41 +22,50 @@ if(ctx){
 }
 
 let isDrawing = false;
-let x = 0;
-let y = 0;
+
+const lines: { x: number; y: number; }[][] = [];
+let currentLine = null;
+const cursor = {x: 0, y: 0};
 
 canvas.addEventListener("mousedown", (event) => {
-    x = event.offsetX;
-    y = event.offsetY;
+    cursor.x = event.offsetX;
+    cursor.y = event.offsetY;
     isDrawing = true;
+
+    currentLine = [];
+    currentLine.push({x: cursor.x, y: cursor.y});
+    lines.push(currentLine);
 });
 
-globalThis.addEventListener("mouseup", (event) => {
-    if (isDrawing){
-        drawLine(ctx, x, y, event.offsetX, event.offsetY);
-        x = 0;
-        y = 0;
-        isDrawing = false;
-    }
+globalThis.addEventListener("mouseup", () => {
+    isDrawing = false;
+    currentLine = null;
+    canvas.dispatchEvent(new CustomEvent("drawing-changed"));
 });
 
 canvas.addEventListener("mousemove", (event) => {
     if (isDrawing) {
-        drawLine(ctx, x, y, event.offsetX, event.offsetY);
-        x = event.offsetX;
-        y = event.offsetY;
+        cursor.x = event.offsetX;
+        cursor.y = event.offsetY;
+        currentLine.push({x: cursor.x, y: cursor.y});
+        canvas.dispatchEvent(new CustomEvent("drawing-changed"));
     }
 });
 
-function drawLine(context: CanvasRenderingContext2D | null, x1: number, y1: number, x2: number, y2: number){
-    context?.beginPath();
-    if (context) {
-        context.strokeStyle = "black";
-        context.lineWidth = 1;
-        context?.moveTo(x1, y1);
-        context?.lineTo(x2, y2);
-        context?.stroke();
-        context?.closePath();
+function drawLine(){
+    if (ctx) {
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        for (const line of lines) {
+            if (line.length > 1) {
+                ctx.beginPath();
+                const { x, y } = line[0];
+                ctx.moveTo(x, y);
+                for (const { x, y } of line) {
+                    ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+        }
     }
 }
 
@@ -66,8 +75,16 @@ app.append(clearButton);
 
 clearButton.addEventListener("click", function() {
     if(ctx){
-        //ctx.clearRect(0, 0, canvas.width, canvas.height);
+        lines.length = 0;
         ctx.fillStyle = "white";
         ctx?.fillRect(0, 0, canvas.width, canvas.height);
+    }
+});
+
+canvas.addEventListener("drawing-changed", () => {
+    if (ctx) {
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        drawLine();
     }
 });
