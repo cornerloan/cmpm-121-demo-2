@@ -21,13 +21,19 @@ if(ctx){
     ctx?.fillRect(0, 0, canvas.width, canvas.height);
 }
 
+const spacing_line = document.createElement("div");
+app.append(spacing_line);
+
 let isDrawing = false;
+let currentLineWidth = 5;
 
 class Line {
     points: { x: number; y: number }[] = [];
+    lineWidth: number;
 
-    constructor(x: number, y: number) {
+    constructor(x: number, y: number, lineWidth: number) {
         this.points.push({ x, y });
+        this.lineWidth = lineWidth;
     }
 
     drag(x: number, y: number) {
@@ -43,6 +49,7 @@ class Line {
             for (const point of this.points) {
                 ctx.lineTo(point.x, point.y);
             }
+            ctx.lineWidth = this.lineWidth;
             ctx.stroke();
         }
     }
@@ -56,7 +63,7 @@ canvas.addEventListener("mousedown", (event) => {
     const cursor = { x: event.offsetX, y: event.offsetY };
     isDrawing = true;
 
-    currentLine = new Line(cursor.x, cursor.y);
+    currentLine = new Line(cursor.x, cursor.y, currentLineWidth);
     lines.push(currentLine);
 });
 
@@ -129,3 +136,30 @@ redoButton.addEventListener("click", function () {
         canvas.dispatchEvent(new CustomEvent("drawing-changed"));
     }
 });
+
+const spacing_line2 = document.createElement("div");
+app.append(spacing_line2);
+
+const thinButton = document.createElement("button");
+thinButton.innerText = "Thin";
+app.append(thinButton);
+
+thinButton.addEventListener("click", function () {
+    currentLineWidth = 5;
+    widthText.innerText = "Marker: Thin";
+});
+
+const thickButton = document.createElement("button");
+thickButton.innerText = "Thick";
+app.append(thickButton);
+
+thickButton.addEventListener("click", function () {
+    currentLineWidth = 10;
+    widthText.innerText = "Marker: Thick";
+});
+
+const widthText = document.createElement("span");
+widthText.innerText = "Marker: Thin";
+widthText.style.fontSize = "15px";
+widthText.style.fontWeight = "bold";
+app.append(widthText);
