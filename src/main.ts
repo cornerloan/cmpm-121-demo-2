@@ -26,6 +26,7 @@ app.append(spacing_line);
 
 let isDrawing = false;
 let currentLineWidth = 5;
+let currentMousePos = { x: 0, y: 0 };
 
 class Line {
     points: { x: number; y: number }[] = [];
@@ -74,10 +75,15 @@ globalThis.addEventListener("mouseup", () => {
 });
 
 canvas.addEventListener("mousemove", (event) => {
+    const cursor = { x: event.offsetX, y: event.offsetY };
+    currentMousePos = cursor;
+
     if (isDrawing && currentLine) {
-        currentLine.drag(event.offsetX, event.offsetY);
+        currentLine.drag(cursor.x, cursor.y);
         canvas.dispatchEvent(new CustomEvent("drawing-changed"));
     }
+
+    canvas.dispatchEvent(new CustomEvent("tool-moved"));
 });
 
 function drawLines() {
@@ -163,3 +169,16 @@ widthText.innerText = "Marker: Thin";
 widthText.style.fontSize = "15px";
 widthText.style.fontWeight = "bold";
 app.append(widthText);
+
+canvas.addEventListener("tool-moved", () => {
+    if (ctx && !isDrawing) {
+        drawLines();
+
+        ctx.beginPath();
+        ctx.arc(currentMousePos.x, currentMousePos.y, currentLineWidth / 2, 0, Math.PI * 2);
+        ctx.fillStyle = "black";
+        ctx.fill();
+
+        canvas.style.cursor = "none";
+    }
+});
