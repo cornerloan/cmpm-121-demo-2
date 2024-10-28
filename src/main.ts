@@ -1,13 +1,12 @@
 import "./style.css";
 
-const APP_NAME = "Hello";
+const APP_NAME = "Canvas Application";
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
 document.title = APP_NAME;
-app.innerHTML = APP_NAME;
 
 const app_title = document.createElement("h1");
-app_title.innerHTML = "Welcome to my canvas";
+app_title.innerHTML = "Canvas App v1.0";
 app.append(app_title);
 
 const canvas = document.createElement("canvas") as HTMLCanvasElement;
@@ -21,8 +20,17 @@ if(ctx){
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
-const spacing_line = document.createElement("div");
+const spacing_line = document.createElement("h1");
 app.append(spacing_line);
+
+const widthText = document.createElement("span");
+widthText.innerText = "Pen: Thin";
+widthText.style.fontSize = "15px";
+widthText.style.fontWeight = "bold";
+app.append(widthText);
+
+const spacing_line2 = document.createElement("div");
+app.append(spacing_line2);
 
 let isDrawing = false;
 let currentLineWidth = 5;
@@ -91,9 +99,9 @@ canvas.addEventListener("mousedown", (event) => {
         currentElement = null;
         stickerMode = false;
 
-        //reset to thin marker
+        //reset to thin Pen
         currentLineWidth = 5;
-        widthText.innerText = "Marker: Thin";
+        widthText.innerText = "Pen: Thin";
         canvas.dispatchEvent(new CustomEvent("drawing-changed"));
     } 
     //code for line placement
@@ -177,8 +185,8 @@ redoButton.addEventListener("click", function () {
     }
 });
 
-const spacing_line2 = document.createElement("div");
-app.append(spacing_line2);
+const spacing_line3 = document.createElement("div");
+app.append(spacing_line3);
 
 const thinButton = document.createElement("button");
 thinButton.innerText = "Thin";
@@ -186,7 +194,7 @@ app.append(thinButton);
 
 thinButton.addEventListener("click", function () {
     currentLineWidth = 5;
-    widthText.innerText = "Marker: Thin";
+    widthText.innerText = "Pen: Thin";
     stickerEmoji = "";
     stickerMode = false;
 });
@@ -197,16 +205,10 @@ app.append(thickButton);
 
 thickButton.addEventListener("click", function () {
     currentLineWidth = 10;
-    widthText.innerText = "Marker: Thick";
+    widthText.innerText = "Pen: Thick";
     stickerEmoji = "";
     stickerMode = false;
 });
-
-const widthText = document.createElement("span");
-widthText.innerText = "Marker: Thin";
-widthText.style.fontSize = "15px";
-widthText.style.fontWeight = "bold";
-app.append(widthText);
 
 canvas.addEventListener("tool-moved", () => {
     if (ctx && !isDrawing) {
@@ -224,8 +226,8 @@ canvas.addEventListener("tool-moved", () => {
     }
 });
 
-const spacing_line3 = document.createElement("div");
-app.append(spacing_line3);
+const spacing_line4 = document.createElement("div");
+app.append(spacing_line4);
 
 
 const stickerOptions = ["😭", "🫡", "🍡"];
@@ -238,7 +240,7 @@ function createStickerButtons() {
         const stickerButton = document.createElement("button");
         stickerButton.innerText = sticker;
         stickerButton.addEventListener("click", () => {
-            widthText.innerText = `Marker: ${sticker}`;
+            widthText.innerText = `Sticker: ${sticker}`;
             stickerEmoji = sticker;
             stickerMode = true;
         });
