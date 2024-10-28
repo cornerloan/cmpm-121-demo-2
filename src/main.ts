@@ -122,13 +122,11 @@ canvas.addEventListener("mousemove", (event) => {
     canvas.dispatchEvent(new CustomEvent("tool-moved"));
 });
 
-function drawElements() {
-    if (ctx) {
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        for (const element of elements) {
-            element.display(ctx);
-        }
+function drawElements(ctx: CanvasRenderingContext2D) {
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    for (const element of elements) {
+        element.display(ctx);
     }
 }
 
@@ -147,7 +145,7 @@ clearButton.addEventListener("click", function () {
 
 canvas.addEventListener("drawing-changed", () => {
     if (ctx) {
-        drawElements();
+        drawElements(ctx);
     }
 });
 
@@ -212,7 +210,7 @@ app.append(widthText);
 
 canvas.addEventListener("tool-moved", () => {
     if (ctx && !isDrawing) {
-        drawElements();
+        drawElements(ctx);
         if (stickerMode) {
             ctx.font = "30px serif";
             ctx.fillText(stickerEmoji, currentMousePos.x, currentMousePos.y);
@@ -259,7 +257,39 @@ app.append(addStickerButton);
 addStickerButton.addEventListener("click", () => {
     const input = prompt("Enter custom sticker text", "❓");
     if (input) {
+        stickerEmoji = input;
+        stickerMode = true;
         stickerOptions.push(input);
         createStickerButtons();
+    }
+});
+
+
+const exportButton = document.createElement("button");
+exportButton.innerText = "Export as PNG";
+app.append(exportButton);
+
+exportButton.addEventListener("click", () => {
+    const exportCanvas = document.createElement("canvas") as HTMLCanvasElement;
+    exportCanvas.width = 1024;
+    exportCanvas.height = 1024;
+    const exportCtx = exportCanvas.getContext("2d");
+
+    if (exportCtx) {
+        exportCtx.scale(4, 4); // Scale up by 4x
+        drawElements(exportCtx); // Draw elements on the larger canvas
+
+        exportCanvas.toBlob((blob) => {
+            if (blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "canvas_export.png";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        }, "image/png");
     }
 });
