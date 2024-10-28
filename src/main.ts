@@ -229,32 +229,37 @@ canvas.addEventListener("tool-moved", () => {
 const spacing_line3 = document.createElement("div");
 app.append(spacing_line3);
 
-const sobButton = document.createElement("button");
-sobButton.innerText = "😭";
-app.append(sobButton);
 
-sobButton.addEventListener("click", function () {
-    widthText.innerText = "Marker: 😭";
-    stickerEmoji = "😭";
-    stickerMode = true;
-});
+const stickerOptions = ["😭", "🫡", "🍡"];
+const addStickerButton = document.createElement("button");
 
-const saluteButton = document.createElement("button");
-saluteButton.innerText = "🫡";
-app.append(saluteButton);
+//create all the buttons for premade and custom stickers
+function createStickerButtons() {
+    stickerButtonsContainer.innerHTML = "";
+    stickerOptions.forEach((sticker) => {
+        const stickerButton = document.createElement("button");
+        stickerButton.innerText = sticker;
+        stickerButton.addEventListener("click", () => {
+            widthText.innerText = `Marker: ${sticker}`;
+            stickerEmoji = sticker;
+            stickerMode = true;
+        });
+        stickerButtonsContainer.append(stickerButton);
+    });
+}
 
-saluteButton.addEventListener("click", function () {
-    widthText.innerText = "Marker: 🫡";
-    stickerEmoji = "🫡";
-    stickerMode = true;
-});
 
-const dangoButton = document.createElement("button");
-dangoButton.innerText = "🍡";
-app.append(dangoButton);
+const stickerButtonsContainer = document.createElement("div");
+app.append(stickerButtonsContainer);
+createStickerButtons();
 
-dangoButton.addEventListener("click", function () {
-    widthText.innerText = "Marker: 🍡";
-    stickerEmoji = "🍡";
-    stickerMode = true;
+addStickerButton.innerText = "Add Custom Sticker";
+app.append(addStickerButton);
+
+addStickerButton.addEventListener("click", () => {
+    const input = prompt("Enter custom sticker text", "❓");
+    if (input) {
+        stickerOptions.push(input);
+        createStickerButtons();
+    }
 });
