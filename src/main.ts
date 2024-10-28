@@ -37,14 +37,47 @@ let currentLineWidth = 5;
 let currentMousePos = { x: 0, y: 0 };
 let stickerMode = false;
 let stickerEmoji = "";
+let toolHue = 0;
+let stickerRotation = 0;
+
+const hueSlider = document.createElement("input");
+hueSlider.type = "range";
+hueSlider.min = "0";
+hueSlider.max = "360";
+hueSlider.value = "0";
+hueSlider.style.width = "100%";
+app.append(hueSlider);
+
+const hueLabel = document.createElement("span");
+hueLabel.innerText = "Color Hue / Sticker Rotation: 0°";
+app.append(hueLabel);
+
+
+const spacing_line3 = document.createElement("div");
+app.append(spacing_line3);
+
+hueSlider.addEventListener("input", (event) => {
+    const value = parseInt((event.target as HTMLInputElement).value);
+    hueLabel.innerText = `Color Hue / Sticker Rotation: ${value}°`;
+    if (stickerMode) {
+        stickerRotation = value;
+    } else {
+        if (ctx) {
+            toolHue = value;
+            ctx.strokeStyle = `hsl(${toolHue}, 100%, 50%)`;
+        }
+    }
+});
 
 class Line {
     points: { x: number; y: number }[] = [];
     lineWidth: number;
+    hue: number;
 
-    constructor(x: number, y: number, lineWidth: number) {
+    constructor(x: number, y: number, lineWidth: number, hue: number) {
         this.points.push({ x, y });
         this.lineWidth = lineWidth;
+        this.hue = hue;
     }
 
     drag(x: number, y: number) {
@@ -61,6 +94,7 @@ class Line {
                 ctx.lineTo(point.x, point.y);
             }
             ctx.lineWidth = this.lineWidth;
+            ctx.strokeStyle = `hsl(${this.hue}, 100%, 50%)`;
             ctx.stroke();
         }
     }
@@ -69,10 +103,12 @@ class Line {
 class Sticker {
     emoji: string;
     position: { x: number; y: number };
+    rotation: number;
 
-    constructor(emoji: string, x: number, y: number) {
+    constructor(emoji: string, x: number, y: number, rotation: number) {
         this.emoji = emoji;
         this.position = { x, y };
+        this.rotation = rotation;
     }
 
     drag(x: number, y: number) {
@@ -80,8 +116,12 @@ class Sticker {
     }
 
     display(ctx: CanvasRenderingContext2D) {
+        ctx.save();
+        ctx.translate(this.position.x, this.position.y);
+        ctx.rotate((this.rotation * Math.PI) / 180);
         ctx.font = "30px serif";
-        ctx.fillText(this.emoji, this.position.x, this.position.y);
+        ctx.fillText(this.emoji, 0, 0);
+        ctx.restore();
     }
 }
 
@@ -94,7 +134,7 @@ canvas.addEventListener("mousedown", (event) => {
 
     //code for sticker placement
     if (stickerMode && stickerEmoji) {
-        currentElement = new Sticker(stickerEmoji, cursor.x, cursor.y);
+        currentElement = new Sticker(stickerEmoji, cursor.x, cursor.y, stickerRotation);
         elements.push(currentElement);
         currentElement = null;
         stickerMode = false;
@@ -107,7 +147,7 @@ canvas.addEventListener("mousedown", (event) => {
     //code for line placement
     else {
         isDrawing = true;
-        currentElement = new Line(cursor.x, cursor.y, currentLineWidth);
+        currentElement = new Line(cursor.x, cursor.y, currentLineWidth, toolHue);
         elements.push(currentElement);
     }
 });
@@ -127,6 +167,7 @@ canvas.addEventListener("mousemove", (event) => {
         canvas.dispatchEvent(new CustomEvent("drawing-changed"));
     }
 
+    stickerRotation = Number(hueSlider.value);
     canvas.dispatchEvent(new CustomEvent("tool-moved"));
 });
 
@@ -185,11 +226,12 @@ redoButton.addEventListener("click", function () {
     }
 });
 
-const spacing_line3 = document.createElement("div");
-app.append(spacing_line3);
+
+const spacing_line4 = document.createElement("div");
+app.append(spacing_line4);
 
 const thinButton = document.createElement("button");
-thinButton.innerText = "Thin";
+thinButton.innerText = "Thin Pen";
 app.append(thinButton);
 
 thinButton.addEventListener("click", function () {
@@ -200,7 +242,7 @@ thinButton.addEventListener("click", function () {
 });
 
 const thickButton = document.createElement("button");
-thickButton.innerText = "Thick";
+thickButton.innerText = "Thick Pen";
 app.append(thickButton);
 
 thickButton.addEventListener("click", function () {
@@ -214,21 +256,21 @@ canvas.addEventListener("tool-moved", () => {
     if (ctx && !isDrawing) {
         drawElements(ctx);
         if (stickerMode) {
+            ctx.save();
+            ctx.translate(currentMousePos.x, currentMousePos.y);
+            ctx.rotate((stickerRotation * Math.PI) / 180);
             ctx.font = "30px serif";
-            ctx.fillText(stickerEmoji, currentMousePos.x, currentMousePos.y);
+            ctx.fillText(stickerEmoji, 0, 0);
+            ctx.restore();
         } else {
             ctx.beginPath();
             ctx.arc(currentMousePos.x, currentMousePos.y, currentLineWidth / 2, 0, Math.PI * 2);
-            ctx.fillStyle = "black";
+            ctx.fillStyle = `hsl(${toolHue}, 100%, 50%)`;
             ctx.fill();
             canvas.style.cursor = "none";
         }
     }
 });
-
-const spacing_line4 = document.createElement("div");
-app.append(spacing_line4);
-
 
 const stickerOptions = ["😭", "🫡", "🍡"];
 const addStickerButton = document.createElement("button");
@@ -248,7 +290,6 @@ function createStickerButtons() {
     });
 }
 
-
 const stickerButtonsContainer = document.createElement("div");
 app.append(stickerButtonsContainer);
 createStickerButtons();
@@ -265,7 +306,6 @@ addStickerButton.addEventListener("click", () => {
         createStickerButtons();
     }
 });
-
 
 const exportButton = document.createElement("button");
 exportButton.innerText = "Export as PNG";
