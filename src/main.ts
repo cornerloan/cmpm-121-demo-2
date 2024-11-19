@@ -49,7 +49,7 @@ hueSlider.style.width = "100%";
 app.append(hueSlider);
 
 const hueLabel = document.createElement("span");
-hueLabel.innerText = "Color Hue / Sticker Rotation: 0°";
+hueLabel.innerText = "Color Hue: Red / Sticker Rotation: 0°";
 app.append(hueLabel);
 
 
@@ -58,7 +58,8 @@ app.append(spacing_line3);
 
 hueSlider.addEventListener("input", (event) => {
     const value = parseInt((event.target as HTMLInputElement).value);
-    hueLabel.innerText = `Color Hue / Sticker Rotation: ${value}°`;
+    const color_name = getColorNameFromHue(value)
+    hueLabel.innerText = `Color Hue: ${color_name} / Sticker Rotation: ${value}°`;
     if (stickerMode) {
         stickerRotation = value;
     } else {
@@ -335,3 +336,17 @@ exportButton.addEventListener("click", () => {
         }, "image/png");
     }
 });
+
+
+
+function getColorNameFromHue(hue: number): string {
+    if (hue >= 0 && hue < 30) return "Red";
+    if (hue >= 30 && hue < 60) return "Orange";
+    if (hue >= 60 && hue < 90) return "Yellow";
+    if (hue >= 90 && hue < 150) return "Green";
+    if (hue >= 150 && hue < 210) return "Cyan";
+    if (hue >= 210 && hue < 270) return "Blue";
+    if (hue >= 270 && hue < 300) return "Purple";
+    if (hue >= 300 && hue < 330) return "Pink;"
+    return "Red"; // Covers hue values from 330 to 360
+}
