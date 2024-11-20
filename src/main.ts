@@ -9,6 +9,7 @@ const app_title = document.createElement("h1");
 app_title.innerHTML = "Canvas App v1.0";
 app.append(app_title);
 
+// Creation of canvas
 const canvas = document.createElement("canvas") as HTMLCanvasElement;
 canvas.width = 256;
 canvas.height = 256;
@@ -23,6 +24,7 @@ if(ctx){
 const spacing_line = document.createElement("h1");
 app.append(spacing_line);
 
+// Text for pen description
 const widthText = document.createElement("span");
 widthText.innerText = "Pen: Thin";
 widthText.style.fontSize = "15px";
@@ -40,6 +42,7 @@ let stickerEmoji = "";
 let toolHue = 0;
 let stickerRotation = 0;
 
+// Creation of slider
 const hueSlider = document.createElement("input");
 hueSlider.type = "range";
 hueSlider.min = "0";
@@ -47,19 +50,20 @@ hueSlider.max = "360";
 hueSlider.value = "0";
 hueSlider.style.width = "100%";
 app.append(hueSlider);
-
 const hueLabel = document.createElement("span");
 hueLabel.innerText = "Color Hue: Red / Sticker Rotation: 0°";
 app.append(hueLabel);
 
-
 const spacing_line3 = document.createElement("div");
 app.append(spacing_line3);
 
+// Slider detection
 hueSlider.addEventListener("input", (event) => {
     const value = parseInt((event.target as HTMLInputElement).value);
     const color_name = getColorNameFromHue(value)
     hueLabel.innerText = `Color Hue: ${color_name} / Sticker Rotation: ${value}°`;
+
+    // Slider output changes based on if user is in stickerMode
     if (stickerMode) {
         stickerRotation = value;
     } else {
@@ -71,7 +75,7 @@ hueSlider.addEventListener("input", (event) => {
 });
 
 class Line {
-    points: { x: number; y: number }[] = [];
+    points: { x: number; y: number }[] = []; // Each line is an array of points
     lineWidth: number;
     hue: number;
 
@@ -81,10 +85,12 @@ class Line {
         this.hue = hue;
     }
 
+    // Moving mouse adds points to the line
     drag(x: number, y: number) {
         this.points.push({ x, y });
     }
 
+    // Output the lines to the canvas
     display(ctx: CanvasRenderingContext2D) {
         if (this.points.length > 1) {
             ctx.beginPath();
@@ -116,6 +122,7 @@ class Sticker {
         this.position = { x, y };
     }
 
+    // Outputs the stickers to the canvas
     display(ctx: CanvasRenderingContext2D) {
         ctx.save();
         ctx.translate(this.position.x, this.position.y);
@@ -153,12 +160,14 @@ canvas.addEventListener("mousedown", (event) => {
     }
 });
 
+// Mouse up updates the canvas and turns off draw mode
 globalThis.addEventListener("mouseup", () => {
     isDrawing = false;
     currentElement = null;
     canvas.dispatchEvent(new CustomEvent("drawing-changed"));
 });
 
+// Mouse move will add points to a line if the mouse is down and user has line selected
 canvas.addEventListener("mousemove", (event) => {
     const cursor = { x: event.offsetX, y: event.offsetY };
     currentMousePos = cursor;
@@ -172,6 +181,7 @@ canvas.addEventListener("mousemove", (event) => {
     canvas.dispatchEvent(new CustomEvent("tool-moved"));
 });
 
+// Adds lines and stickers to the canvas
 function drawElements(ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -180,10 +190,10 @@ function drawElements(ctx: CanvasRenderingContext2D) {
     }
 }
 
+// Creation of clear canvas button
 const clearButton = document.createElement("button");
 clearButton.innerText = "Clear Canvas";
 app.append(clearButton);
-
 clearButton.addEventListener("click", function () {
     if (ctx) {
         elements.length = 0;
@@ -193,16 +203,17 @@ clearButton.addEventListener("click", function () {
     }
 });
 
+// Anytime the drawing changes, the canvas is redrawn
 canvas.addEventListener("drawing-changed", () => {
     if (ctx) {
         drawElements(ctx);
     }
 });
 
+// Creation of the undo button
 const undoButton = document.createElement("button");
 undoButton.innerText = "Undo";
 app.append(undoButton);
-
 undoButton.addEventListener("click", function () {
     if (elements.length > 0) {
         const poppedElement = elements.pop();
@@ -213,10 +224,10 @@ undoButton.addEventListener("click", function () {
     }
 });
 
+// Creation of the redo button
 const redoButton = document.createElement("button");
 redoButton.innerText = "Redo";
 app.append(redoButton);
-
 redoButton.addEventListener("click", function () {
     if (undoneElements.length > 0) {
         const poppedElement = undoneElements.pop();
@@ -231,10 +242,10 @@ redoButton.addEventListener("click", function () {
 const spacing_line4 = document.createElement("div");
 app.append(spacing_line4);
 
+// Creation of the thin pen button
 const thinButton = document.createElement("button");
 thinButton.innerText = "Thin Pen";
 app.append(thinButton);
-
 thinButton.addEventListener("click", function () {
     currentLineWidth = 5;
     widthText.innerText = "Pen: Thin";
@@ -242,10 +253,10 @@ thinButton.addEventListener("click", function () {
     stickerMode = false;
 });
 
+// Creation of the thick pen button
 const thickButton = document.createElement("button");
 thickButton.innerText = "Thick Pen";
 app.append(thickButton);
-
 thickButton.addEventListener("click", function () {
     currentLineWidth = 10;
     widthText.innerText = "Pen: Thick";
@@ -253,6 +264,7 @@ thickButton.addEventListener("click", function () {
     stickerMode = false;
 });
 
+// Covers what happens when user moves their mouse based on the tool they have selected (line or sticker)
 canvas.addEventListener("tool-moved", () => {
     if (ctx && !isDrawing) {
         drawElements(ctx);
@@ -295,9 +307,9 @@ const stickerButtonsContainer = document.createElement("div");
 app.append(stickerButtonsContainer);
 createStickerButtons();
 
+// Creation of the custom sticker button
 addStickerButton.innerText = "Add Custom Sticker";
 app.append(addStickerButton);
-
 addStickerButton.addEventListener("click", () => {
     const input = prompt("Enter custom sticker text", "❓");
     if (input) {
@@ -308,10 +320,10 @@ addStickerButton.addEventListener("click", () => {
     }
 });
 
+// Creation of the export canvas button
 const exportButton = document.createElement("button");
 exportButton.innerText = "Export as PNG";
 app.append(exportButton);
-
 exportButton.addEventListener("click", () => {
     const exportCanvas = document.createElement("canvas") as HTMLCanvasElement;
     exportCanvas.width = 1024;
@@ -338,7 +350,7 @@ exportButton.addEventListener("click", () => {
 });
 
 
-
+// Outputs a color's name based on the hue value
 function getColorNameFromHue(hue: number): string {
     if (hue >= 0 && hue < 30) return "Red";
     if (hue >= 30 && hue < 60) return "Orange";
